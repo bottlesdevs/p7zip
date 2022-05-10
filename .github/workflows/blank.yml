@@ -1,0 +1,51 @@
+name: build-portable
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install dependencies
+        run:
+          sudo apt-get update ;
+          DEBIAN_FRONTEND=noninteractive sudo apt install build-essential
+          
+      - name: Prepare p7zip source code
+        run: |
+          wget https://github.com/jbdemonte/p7zip/archive/refs/tags/16.02.tar.gz
+          tar -xf 16.02.tar.gz
+          mkdir $HOME/p7zip_standalone
+          cd p7zip-16.02
+        
+      - name: Clean build dir
+        run: cd p7zip-16.02 && make clean
+        
+      - name: Build p7zip
+        run: |
+          cd p7zip-16.02
+          make all3
+          cd bin
+          tar cJvf $HOME/p7zip.tar.xz *
+          cp -r bin/* $HOME/p7zip/
+      
+      - name: Upload a Build Artifact
+        uses: actions/upload-artifact@v3.0.0
+        with:    
+          path:
+            "/home/runner/p7zip/"
+            
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          draft: false
+          prerelease: false
+          automatic_release_tag: 16.02
+          title: 16.02
+          files: |
+            /home/runner/p7zip.tar.xz
