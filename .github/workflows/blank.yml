@@ -32,7 +32,6 @@ jobs:
           make all3
           cd bin
           tar cJvf $HOME/p7zip.tar.xz *
-          cp -r bin/* $HOME/p7zip/
       
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v3.0.0
